@@ -743,7 +743,14 @@ Where:
 
 ## License
 
-This project is provided for educational purposes.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+### License Summary
+
+- ✅ You can use this for commercial purposes
+- ✅ You can modify and distribute the code
+- ✅ You must include the license and copyright notice
+- ❌ The software is provided "as is" with no warranty
 
 ## Contact
 
