@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Learning Data Loaders</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            overflow: hidden;
+        }
+
+        .slide-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .slide {
+            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+            width: 90%;
+            max-width: 1200px;
+            height: 85vh;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            padding: 60px;
+            display: none;
+            flex-direction: column;
+            position: relative;
+            animation: slideIn 0.5s ease;
+            /* Subtle Orange/Turquoise Accent */
+            border: 2px solid rgba(6, 182, 212, 0.4); 
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        h1 {
+            font-size: 3em;
+            background: linear-gradient(135deg, #e879f9 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #e879f9 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 30px;
+            /* Subtle Orange/Turquoise Accent */
+            border-bottom: 4px solid #06b6d4; 
+            padding-bottom: 15px;
+        }
+
+        h3 {
+            font-size: 1.8em;
+            color: #a78bfa;
+            margin: 25px 0 15px 0;
+        }
+
+        .subtitle {
+            font-size: 1.4em;
+            color: #cbd5e1;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .content::-webkit-scrollbar-thumb {
+            background: #e879f9;
+            border-radius: 10px;
+        }
+
+        ul {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        li {
+            font-size: 1.3em;
+            line-height: 1.8;
+            margin: 15px 0;
+            padding-left: 35px;
+            position: relative;
+            color: #e2e8f0;
+        }
+
+        li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            /* Subtle Orange/Turquoise Accent */
+            color: #f97316; 
+            font-size: 1.5em;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 20px 0;
+        }
+
+        .feature-box {
+            /* Subtle Orange/Turquoise Accent */
+            background: rgba(6, 182, 212, 0.15); 
+            padding: 25px;
+            border-radius: 15px;
+            /* Subtle Orange/Turquoise Accent */
+            border-left: 5px solid #06b6d4; 
+            margin: 15px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-box h3 {
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+
+        .feature-box p {
+            color: #cbd5e1;
+            font-size: 1.1em;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            color: #1a1a2e;
+        }
+
+        .code-box {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            margin: 20px 0;
+            overflow-x: auto;
+            /* Subtle Orange/Turquoise Accent */
+            border: 1px solid rgba(249, 115, 22, 0.3); 
+        }
+
+        .code-comment {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .code-keyword {
+            color: #e879f9;
+            font-weight: bold;
+        }
+
+        .code-function {
+            color: #60a5fa;
+        }
+
+        .code-string {
+            color: #34d399;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            /* Subtle Orange/Turquoise Accent */
+            border-top: 2px solid rgba(6, 182, 212, 0.3);
+        }
+
+        button {
+            background: linear-gradient(135deg, #e879f9 0%, #a78bfa 100%);
+            color: #1a1a2e;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(232, 121, 249, 0.5);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .slide-number {
+            color: #cbd5e1;
+            font-size: 1.1em;
+        }
+
+        .emoji {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .metric-card {
+            background: rgba(232, 121, 249, 0.15);
+            border: 2px solid #e879f9;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .metric-card .number {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #e879f9 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+        }
+
+        .metric-card .label {
+            font-size: 1.1em;
+            color: #cbd5e1;
+            margin-top: 10px;
+        }
+
+        .center-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .learning-badge {
+            display: inline-block;
+            /* Subtle Orange/Turquoise Accent */
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); 
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .code-highlight {
+            background: rgba(34, 197, 94, 0.2);
+            border-left: 4px solid #10b981;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        .code-highlight h4 {
+            color: #10b981;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .code-highlight p {
+            color: #e2e8f0;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        p {
+            color: #cbd5e1;
+            font-size: 1.2em;
+            line-height: 1.7;
+        }
+
+        strong {
+            color: #e879f9;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="slide active">
+            <div class="center-content">
+                <h1>🤖 Machine Learning Data Loaders</h1>
+                <p class="subtitle">Comprehensive Tools for ML Classification & Regression</p>
+                <div class="grid-3" style="margin-top: 60px; width: 100%;">
+                    <div class="metric-card">
+                        <div class="number">2</div>
+                        <div class="label">Data Loaders</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="number">561</div>
+                        <div class="label">Features Handled</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="number">100%</div>
+                        <div class="label">Privacy-Safe</div>
+                    </div>
+                </div>
+            </div>
+            <div class="navigation">
+                <button id="prevBtn" onclick="prevSlide()" disabled>← Previous</button>
+                <span class="slide-number">Slide <span id="current">1</span> of <span id="total">12</span></span>
+                <button id="nextBtn" onclick="nextSlide()">Next →</button>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>📊 Project Overview</h2>
+            <div class="content">
+                <p style="margin-bottom: 30px;">Two specialized data loader modules for educational and practical ML applications</p>
+                
+                <div class="two-column">
+                    <div class="feature-box">
+                        <h3>🌳 LoadDecisionTree</h3>
+                        <ul>
+                            <li>Insurance cost prediction</li>
+                            <li>Risk stratification</li>
+                            <li>Decision tree classification</li>
+                            <li>Rule extraction & visualization</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-box">
+                        <h3>📱 LoadKNNNormalization</h3>
+                        <ul>
+                            <li>Smartphone activity recognition</li>
+                            <li>561 sensor features</li>
+                            <li>Z-score normalization</li>
+                            <li>K-Nearest Neighbors preprocessing</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="navigation">
+                <button id="prevBtn" onclick="prevSlide()">← Previous</button>
+                <span class="slide-number">Slide <span id="current">2</span> of <span id="total">12</span></span>
+                <button id="nextBtn" onclick="nextSlide()">Next →</button>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>🌳 LoadDecisionTree: Insurance Classification</h2>
+            <div class="content">
+                <h3>Purpose & Data</h3>
+                <ul>
+                    <li>Classifies insurance charges into <span class="highlight">10 risk tiers</span></li>
+                    <li>Dataset: 1,338 records with age, BMI, children, smoker status, region</li>
+                    <li>Train-test split: 70% training (~936 rows) / 30% testing (~402 rows)</li>
+                </ul>
+
+                <h3>Key Features</h3>
+                <ul>
+                    <li><strong>Automatic Feature Engineering:</strong> Age groups, BMI categories (WHO standards)</li>
+                    <li><strong>Regional Filtering:</strong> Northeast, Southeast, Northwest, Southwest analysis</li>
+                    <li><strong>Model Training:</strong> Tests 12 hyperparameter configurations</li>
+                    <li><strong>Rule Extraction:</strong> Custom (with confidence) + simple sklearn methods</li>
+                    <li><strong>Visualization:</strong> Tree diagrams, feature importance, confusion matrices</li>
+                </ul>
+            </div>
+            <div class="navigation">
+                <button id="prevBtn" onclick="prevSlide()">← Previous</button>
+                <span class="slide-number">Slide <span id="current">3</span> of <span id="total">12</span></span>
+                <button id="nextBtn" onclick="nextSlide()">Next →</button>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>💡 Code Learning: Label Encoding</h2>
+            <div class="content">
+                <span class="learning-badge">KEY CONCEPT</span>
+                
+                <div class="code-highlight">
+                    <h4>Why Label Encoding for Decision Trees?</h4>
+                    <p>Decision trees treat encoded values as <strong>categories</strong>, not mathematical relationships. They don't assume that 1 > 0 or that "northwest" (3) > "northeast" (0).</p>
+                </div>
+
+                <div class="code-box">
+<span class="code-comment"># Convert categories to integers</span>
+<span class="code-keyword">for</span> column <span class="code-keyword">in</span> X.columns:
+    <span class="code-keyword">if</span> X[column].dtype == <span class="code-string">'object'</span>:
+        le = <span class="code-function">LabelEncoder</span>()
+        X_encoded[column] = le.<span class="code-function">fit_transform</span>(X[column])
+        <span class="code-comment"># Example: ['male', 'female'] → [1, 0]</span>
+                </div>
+
+                <div class="two-column" style="margin-top: 20px;">
+                    <div class="feature-box" style="background: rgba(34, 197, 94, 0.15); border-left-color: #10b981;">
+                        <h3 style="color: #10b981; font-size: 1.3em;">✓ Works For</h3>
+                        <p>Decision Trees, Random Forests (treats as categories)</p>
+                    </div>
+                    <div class="feature-box" style="background: rgba(239, 68, 68, 0.15); border-left-color: #ef4444;">
+                        <h3 style="color: #ef4444; font-size: 1.3em;">✗ Don't Use For</h3>
+                        <p>Linear Regression, Neural Networks (implies false ordering)</p>
+                    </div>
+                </div>
+
+                <div class="code-highlight">
+                    <h4>Alternative: One-Hot Encoding</h4>
+                    <p>Creates binary columns: <code style="color: #34d399;">sex_male=[1,0], sex_female=[0,1]</code><br>
+                    Use for linear models and neural networks where ordering matters.</p>
+                </div>
+            </div>
+            <div class="navigation">
+                <button id="prevBtn" onclick="prevSlide()">← Previous</button>
+                <span class="slide-number">Slide <span id="current">4</span> of <span id="total">12</span></span>
+                <button id="nextBtn" onclick="nextSlide()">Next →</button>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>🌲 Code Learning: Recursive Tree Traversal</h2>
+            <div class="content">
+                <span class="learning-badge">ADVANCED PATTERN</span>
+                
+                <div class="code-highlight">
+                    <h4>Nested Function (Closure) Pattern</h4>
+                    <p>The <code style="color: #60a5fa;">recurse()</code> function is defined <strong>inside</strong> extract_rules() to access outer variables without passing them as parameters.</p>
+                </div>
+
+                <div class="code-box">
+<span class="code-keyword">def</span> <span class="code-function">extract_rules</span>(self, max_rules=10):
+    rules = []
+    tree_structure = self.best_model.tree_
+    
+    <span class="code-comment"># NESTED FUNCTION - Closes over outer variables</span>
+    <span class="code-keyword">def</span> <span class="code-function">recurse</span>(node, depth, rule):
+        <span class="code-keyword">if</span> tree_structure.feature[node] == TREE_UNDEFINED:
+            <span class="code-comment"># LEAF NODE: Make prediction</span>
+            rules.<span class="code-function">append</span>(rule)
+        <span class="code-keyword">else</span>:
+            <span class="code-comment"># INTERNAL NODE: Split left/right</span>
+            <span class="code-function">recurse</span>(left_child, depth+1, left_rule)
+            <span class="code-function">recurse</span>(right_child, depth+1, right_rule)
+    
+    <span class="code-function">recurse</span>(0, 0, <span class="code-string">""</span>)  <span class="code-comment"># Start from root</span>
+                </div>
+
+                <div class="code-highlight">
+                    <h4>Why Use Closures?</h4>
+                    <ul style="margin-left: 0;">
+                        <li><strong>Cleaner signature:</strong> No need to pass rules, tree_structure every call</li>
+                        <li><strong>Encapsulation:</strong> recurse() only exists where needed</li>
+                        <li><strong>Standard pattern:</strong> Common for recursive algorithms with shared state</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="navigation">
+                <button id="prevBtn" onclick="prevSlide()">← Previous</button>
+                <span class="slide-number">Slide <span id="current">5</span> of <span id="total">12</span></span>
+                <button id="nextBtn" onclick="nextSlide()">Next →</button>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>📱 LoadKNNNormalization: Activity Recognition</h2>
+            <div class="content">
+                <h3>Purpose & Data</h3>
+                <ul>
+                    <li>Preprocesses smartphone sensor data for KNN classification</li>
+                    <li><span class="highlight">561 features</span> from accelerometer & gyroscope sensors</li>
+                    <li>Activities: WALKING, SITTING, STANDING, LAYING, etc.</li>
+                    <li>30 subjects grouped into 6 sets (5 subjects each)</li>
+                </ul>
+
+                <h3>Core Capabilities</h3>
+                <ul>
+                    <li><strong>Z-score Normalization:</strong> Standardizes features to mean=0, std=1</li>
+                    <li><strong>Statistical Analysis:</strong> Activity/subject stats, correlation matrices</li>
+                    <li><strong>Outlier Detection:</strong> Z-score method for anomaly identification</li>
+                    <li><strong>Balanced Sampling:</strong> Equal samples per activity class</li>
+                    <li><strong>Distance Computation:</strong> Euclidean distance for KNN algorithm</li>
+                </ul>
+            </div>
+            <div class="navigation">
+                <button id="prevBtn" onclick="prevSlide()">← Previous</button>
+                <span class="slide-number">Slide <span id="current">6</span> of <span id="total">12</span></span>
+                <button id="nextBtn" onclick="nextSlide()">Next →</button>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>🎯 Code Learning: Boolean Masking</h2>
+            <div class="content">
+                <span class="learning-badge">NUMPY OPTIMIZATION</span>
+                
+                <div class="code-highlight">
+                    <h4>Vectorized Operations: No Loops!</h4>
+                    <p>Boolean masking creates a True/False array, then uses it to filter rows in a single, highly optimized operation.</p>
+                </div>
+
+                <div class="code-box">
+<span class="code-keyword">def</span> <span class="code-function">get_features_by_activity</span>(self, activity_name):
+    activity_col = self.pd_df[<span class="code-string">'Activity'</span>].values
+    
+    <span class="code-comment"># BOOLEAN MASK: Vectorized comparison (no loops!)</span>
+    mask = activity_col == activity_name
+    <span class="code-comment"># Result: [False, True, False, True, True, ...]</span>
+    
+    <span class="code-comment"># FANCY INDEXING: Two-step selection</span>
+    <span class="code-comment"># [mask] → Boolean indexing on rows</span>
+    <span class="code-comment"># [:, self.feature_cols] → Fancy indexing on columns</span>
+    <span class="code-keyword">return</span> self.np_data[mask][:, self.feature_cols]
+                </div>
+
+                <div class="code-highlight">
+                    <h4>Performance Benefits</h4>
+                    <ul style="margin-left: 0;">
+                        <li><strong>1000x faster:</strong> C-level operations vs Python loops</li>
+                        <li><strong>Memory efficient:</strong> Single pass through data</li>
+                        <li><strong>Readable:</strong> Intent is clear and concise</li>
+                    </ul>
+                </div>
+
+                <div class="feature-box" style="background: rgba(59, 130, 246, 0.15); border-left-color: #3b82f6;">
+                    <p style="color: #93c5fd;"><strong>Example:</strong> array1 = [12, 24, 16, 21, 32, 29, 7, 15]<br>
+                    mask = array1 > 20 → [False, True, False, True, True, True, False, False]<br>
+                    array1[mask] → [24, 21, 32, 29]</p>
+                </div>
+            </div>
+            <div class="navigation">
+                <button id="prevBtn" onclick="prevSlide()">← Previous</button>
+                <span class="slide-number">Slide <span id="current">7</span> of <span id="total">12</span></span>
+                <button id="nextBtn" onclick="nextSlide()">Next →</button>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>📐 Z-Score Normalization</h2>
+            <div class="content">
+                <div class="code-box" style="font-size: 1.5em; text-align: center; padding: 40px;">
+                    z = (x - μ) / σ
+                </div>
+                <p style="text-align: center; margin: 20px 0;">
+                    Where: x = original value, μ = mean, σ = standard deviation
+                </p>
+
+                <div class="code-box">
+<span class="code-keyword">def</span> <span class="code-function">normalize_features</span>(self, data=None):
+    data = self.pd_df.iloc[:, self.feature_cols].values.<span class="code-function">astype</span>(float)
+    
+    mean = np.<span class="code-function">mean</span>(data, axis=0)  <span class="code-comment"># Mean of each feature</span>
+    std = np.<span class="code-function">std</span>(data, axis=0)    <span class="code-comment"># Std of each feature</span>
+    std[std == 0] = 1  <span class="code-comment"># Avoid division by zero</span>
+    
+    <span class="code-keyword">return</span> (data - mean) / std  <span class="code-comment"># Standardize: mean=0, std=1</span>
+                </div>
+
+                <h3>Why Normalize?</h3>
+                <div class="two-column">
+                    <div>
+                        <ul>
+                            <li><strong>Equal scales:</strong> All features mean=0, std=1</li>
+                            <li><strong>Essential for KNN:</strong> Distance-based algorithms need equal scales</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <ul>
+                            <li><strong>Prevents dominance:</strong> Large-scale features don't overshadow small ones</li>
+                            <li><strong>Improves convergence:</strong> Faster, more stable training</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="navigation">
+                <button id="prevBtn" onclick="prevSlide()">← Previous</button>
+                <span class="slide-number">Slide <span id="current">8</span> of <span id="total">12</span></span>
+                <button id="nextBtn" onclick="nextSlide()">Next →</button>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>🤖 LLM Feature Engineering</h2>
+            <div class="content">
+                <h3><span class="emoji">🔒</span>OllamaFeatureEngineer: Privacy-First AI</h3>
+                
+                <div class="feature-box" style="background: rgba(34, 197, 94, 0.15); border-left-color: #10b981;">
+                    <ul>
+                        <li><strong>100% Local:</strong> Runs entirely on your machine via Ollama</li>
+                        <li><strong>No API Costs:</strong> Free after setup (uses local compute)</li>
+                        <li><strong>Privacy-Preserving:</strong> Data never leaves your computer</li>
+                        <li><strong>Multiple Models:</strong> Llama, Mistral, Qwen, DeepSeek support</li>
+                    </ul>
+                </div>
+
+                <h3>Features</h3>
+                <ul>
+                    <li>🎨 Colorful logging with ANSI colors & Unicode icons</li>
+                    <li>📊 Comprehensive metrics (timing, success rates, errors)</li>
+                    <li>🧹 Automatic model cleanup on errors</li>
+                    <li>🎯 Smart task detection (classification vs regression)</li>
+                    <li>⚙️ Full CLI support for all parameters</li>
+                </ul>
+            </div>
+            <div class="navigation">
+                <button id="prevBtn" onclick="prevSlide()">← Previous</button>
+                <span class="slide-number">Slide <span id="current">9</span> of <span id="total">12</span></span>
+                <button id="nextBtn" onclick="nextSlide()">Next →</button>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>🏗️ Modular Architecture</h2>
+            <div class="content">
+                <p style="margin-bottom: 25px;">Refactored for maintainability and reusability</p>
+
+                <div class="grid-3">
+                    <div class="feature-box">
+                        <h3 style="font-size: 1.3em;">LoadDecisionTree</h3>
+                        <p>Main interface, coordinates all operations</p>
+                        <p style="color: #e879f9; margin-top: 10px; font-weight: bold;">~750 lines</p>
+                    </div>
+                    <div class="feature-box">
+                        <h3 style="font-size: 1.3em;">FeatureEngineer</h3>
+                        <p>Age groups, BMI categories, charge bins</p>
+                        <p style="color: #e879f9; margin-top: 10px; font-weight: bold;">~170 lines</p>
+                    </div>
+                    <div class="feature-box">
+                        <h3 style="font-size: 1.3em;">DataAggregator</h3>
+                        <p>Regional comparisons, bar charts</p>
+                        <p style="color: #e879f9; margin-top: 10px; font-weight: bold;">~170 lines</p>
+                    </div>
+                </div>
+
+                <div class="feature-box" style="margin-top: 20px;">
+                    <h3>TreeVisualizer (~600 lines)</h3>
+                    <p style="font-size: 1.2em;">Dedicated visualization: sklearn-style and RapidMiner-style tree diagrams</p>
+                </div>
+
+                <h3>✨ Benefits</h3>
+                <ul>
+                    <li>Separation of concerns - single responsibility per module</li>
+                    <li>Reusability - use modules independently in other projects</li>
+                    <li>Maintainability - smaller, focused files</li>
+                    <li>Testability - isolate and test each component</li>
+                </ul>
+            </div>
+            <div class="navigation">
+                <button id="prevBtn" onclick="prevSlide()">← Previous</button>
+                <span class="slide-number">Slide <span id="current">10</span> of <span id="total">12</span></span>
+                <button id="nextBtn" onclick="nextSlide()">Next →</button>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>🔧 Code Learning: Lambda Functions & Formatting</h2>
+            <div class="content">
+                <span class="learning-badge">PYTHON TRICKS</span>
+                
+                <div class="code-highlight">
+                    <h4>FuncFormatter with Lambda: Format Y-Axis Ticks</h4>
+                    <p>Lambda functions are perfect for simple, one-time-use formatters without defining full functions.</p>
+                </div>
+
+                <div class="code-box">
+<span class="code-comment"># Format y-axis with comma separators (12000 → 12,000)</span>
+ax.yaxis.<span class="code-function">set_major_formatter</span>(
+    mtick.<span class="code-function">FuncFormatter</span>(<span class="code-keyword">lambda</span> x, _: <span class="code-string">f'{int(x):,}'</span>)
+)
+
+<span class="code-comment"># Lambda breakdown:</span>
+<span class="code-comment"># - x: the tick value (e.g., 12345.67)</span>
+<span class="code-comment"># - _: tick position (unused, underscore = convention)</span>
+<span class="code-comment"># - f'{int(x):,}': Format as integer with commas</span>
+                </div>
+
+                <div class="two-column" style="margin-top: 20px;">
+                    <div class="code-highlight">
+                        <h4>Lambda vs Regular Function</h4>
+                        <div class="code-box" style="font-size: 0.9em;">
+<span class="code-comment"># Lambda (concise)</span>
+<span class="code-keyword">lambda</span> x, _: <span class="code-string">f'{int(x):,}'</span>
+
+<span class="code-comment"># Equivalent function</span>
+<span class="code-keyword">def</span> <span class="code-function">format_tick</span>(x, pos):
+    <span class="code-keyword">return</span> <span class="code-string">f'{int(x):,}'</span>
+                        </div>
+                    </div>
+                    <div class="code-highlight">
+                        <h4>Why Use Lambda?</h4>
+                        <ul style="margin-left: 0; font-size: 0.95em;">
+                            <li>One-line convenience</li>
+                            <li>No need to name function</li>
+                            <li>Perfect for callbacks</li>
+                            <li>Keeps code localized</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="feature-box" style="background: rgba(59, 130, 246, 0.15); border-left-color: #3b82f6;">
+                    <p><strong>The Underscore Convention:</strong> In Python, <code style="color: #60a5fa;">_</code> means "I must accept this parameter but won't use it." Common in callbacks and unpacking.</p>
+                </div>
+            </div>
+            <div class="navigation">
+                <button id="prevBtn" onclick="prevSlide()">← Previous</button>
+                <span class="slide-number">Slide <span id="current">11</span> of <span id="total">12</span></span>
+                <button id="nextBtn" onclick="nextSlide()">Next →</button>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>🎯 Summary & Best Practices</h2>
+            <div class="content">
+                <div class="two-column">
+                    <div>
+                        <h3>Decision Tree Tips</h3>
+                        <ul>
+                            <li>Start with defaults via modeling_and_evaluation()</li>
+                            <li>Use both rule extraction methods</li>
+                            <li>Visualize tree for interpretability</li>
+                            <li>Handle class imbalance if needed</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3>KNN Normalization Tips</h3>
+                        <ul>
+                            <li>Always normalize (KNN is distance-based)</li>
+                            <li>Remove outliers before training</li>
+                            <li>Balance classes for better results</li>
+                            <li>Set random seed for reproducibility</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 30px;">🧠 Key Learning Points</h3>
+                <div class="grid-3">
+                    <div class="feature-box" style="background: rgba(34, 197, 94, 0.15); border-left-color: #10b981;">
+                        <h3 style="color: #10b981; font-size: 1.2em;">Label Encoding</h3>
+                        <p style="font-size: 1em;">Works for trees, not linear models</p>
+                    </div>
+                    <div class="feature-box" style="background: rgba(59, 130, 246, 0.15); border-left-color: #3b82f6;">
+                        <h3 style="color: #60a5fa; font-size: 1.2em;">Boolean Masking</h3>
+                        <p style="font-size: 1em;">1000x faster than loops</p>
+                    </div>
+                    <div class="feature-box" style="background: rgba(168, 85, 247, 0.15); border-left-color: #a855f7;">
+                        <h3 style="color: #c084fc; font-size: 1.2em;">Closures</h3>
+                        <p style="font-size: 1em;">Clean recursive patterns</p>
+                    </div>
+                </div>
+
+                <div class="feature-box" style="margin-top: 30px; background: linear-gradient(135deg, rgba(232, 121, 249, 0.25) 0%, rgba(167, 139, 250, 0.25) 100%); padding: 30px;">
+                    <h3 style="text-align: center; font-size: 2em; margin-bottom: 20px;">🚀 Ready to Use!</h3>
+                    <p style="text-align: center; font-size: 1.3em;">
+                        MIT Licensed • Comprehensive Documentation • Modular & Extensible
+                    </p>
+                </div>
+            </div>
+            <div class="navigation">
+                <button id="prevBtn" onclick="prevSlide()">← Previous</button>
+                <span class="slide-number">Slide <span id="current">12</span> of <span id="total">12</span></span>
+                <button id="nextBtn" onclick="nextSlide()" disabled>Next →</button>
+            </div>
+        </div>
+            
+    </div>
+
+    <script>
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        const totalSpan = document.getElementById('total');
+        
+        // Ensure total slides count is correct
+        if (totalSpan) {
+            totalSpan.textContent = totalSlides;
+        }
+
+        function showSlide(index) {
+            // Bounds checking
+            if (index < 0 || index >= totalSlides) {
+                return;
+            }
+
+            // Hide all slides
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+            });
+
+            // Show the current slide
+            slides[index].classList.add('active');
+            currentSlideIndex = index;
+
+            // Update slide number text
+            document.getElementById('current').textContent = currentSlideIndex + 1;
+
+            // Update button states
+            const prevBtn = document.querySelector('.slide.active #prevBtn');
+            const nextBtn = document.querySelector('.slide.active #nextBtn');
+
+            if (prevBtn) {
+                prevBtn.disabled = currentSlideIndex === 0;
+            }
+            if (nextBtn) {
+                nextBtn.disabled = currentSlideIndex === totalSlides - 1;
+            }
+        }
+
+        function nextSlide() {
+            showSlide(currentSlideIndex + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlideIndex - 1);
+        }
+
+        // Initialize the presentation
+        document.addEventListener('DOMContentLoaded', () => {
+            showSlide(0); // Ensure slide 1 is shown and buttons are correctly set on load
+        });
+    </script>
+</body>
+</html>
