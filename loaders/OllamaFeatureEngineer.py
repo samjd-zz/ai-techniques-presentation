@@ -27,7 +27,7 @@ Requirements:
 - At least one model pulled: `ollama pull llama3.2`
 - Sufficient RAM (8GB+ recommended for 7B models)
 
-Author: claude-sonnet-4-5-20250929.ai - Shawn Jackson Dyck
+Author: 80% claude-sonnet-4-5-20250929.ai  - 20% Shawn Jackson Dyck
 Date: October 2025
 """
 

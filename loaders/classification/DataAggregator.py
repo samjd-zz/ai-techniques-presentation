@@ -4,6 +4,10 @@ Data Aggregation Module for Insurance Data
 
 This module provides utilities for aggregating and visualizing insurance data
 across different grouping variables and regions.
+
+Author: Shawn Jackson Dyck
+Date: October 2025
+
 """
 
 import pandas as pd

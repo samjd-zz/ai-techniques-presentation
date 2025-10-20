@@ -1,5 +1,16 @@
 #!/usr/bin/env python3
 
+"""
+Load and analyze insurance data for Decision Tree classification tasks.
+
+This module handles loading the insurance dataset, feature engineering,
+and preparing the data for training and evaluation of Decision Tree models.
+
+Author: 80%  Shawn Jackson Dyck - 20% claude-sonnet-4-5-20250929.ai
+Date: October 2025
+
+"""
+
 # %matplotlib inline  # Jupyter notebook magic command - commented out for standalone Python script
 import matplotlib
 matplotlib.use('Agg')  # Set backend FIRST

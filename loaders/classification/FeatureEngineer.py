@@ -4,6 +4,10 @@ Feature Engineering Module for Insurance Data
 
 This module provides utilities to create engineered features from raw insurance data,
 including age groups, BMI categories, charge bins, and index management.
+
+Author: Shawn Jackson Dyck
+Date: October 2025
+
 """
 
 import pandas as pd

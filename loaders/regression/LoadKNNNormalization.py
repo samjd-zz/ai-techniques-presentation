@@ -1,5 +1,16 @@
 #!/usr/bin/env python3
 
+"""
+KNN Normalization Data Loader Module    
+
+This module provides a data loader and preprocessor for K-Nearest Neighbors (KNN)
+classification tasks, including data normalization and outlier detection.
+
+Author: 80%  Shawn Jackson Dyck - 20% claude-sonnet-4-5-20250929.ai
+Date: October 2025
+
+"""
+
 # %matplotlib inline  # Jupyter notebook magic command - commented out for standalone Python script
 import os
 import matplotlib
