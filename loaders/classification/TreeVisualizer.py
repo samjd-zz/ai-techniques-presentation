@@ -1,5 +1,20 @@
 #!/usr/bin/env python3
 
+"""
+Decision Tree Visualization Module
+
+Part of the ai-techniques-presentation project, licensed under the MIT License.
+Copyright (c) 2025 samjd-zz
+
+This module provides visualization utilities for trained Decision Tree models,
+including both standard sklearn-style visualizations and custom RapidMiner-style
+tree representations with decoded category names.
+
+Author: 80%  claude-sonnet-4-5-20250929.ai - 20% Shawn Jackson Dyck
+Date: October 2025
+License: MIT
+"""
+
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -9,6 +24,7 @@ import os
 from sklearn import tree as sklearn_tree
 from matplotlib.patches import Rectangle, Ellipse
 import textwrap
+
 
 
 class DecisionTreeVisualizer:
