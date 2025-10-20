@@ -1,0 +1,17 @@
+# Machine Learning Data Loaders - Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Core Data Science Libraries
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Machine Learning
+scikit-learn>=1.3.0
+
+# LLM Feature Engineering (Optional - install only if using these modules)
+anthropic>=0.40.0  # For LLMFeatureEngineer.py - Claude API client
+ollama>=0.4.0      # For OllamaFeatureEngineer.py - Local LLM client
