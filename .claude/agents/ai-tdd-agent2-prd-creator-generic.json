@@ -96,8 +96,8 @@
         "output_path": {
           "type": "string",
           "required": false,
-          "default": "./ai-tdd-docs/[feature-name]/PRD.md",
-          "description": "Path where the PRD document should be created (in feature-specific folder)"
+          "default": "./ai-tdd-docs/[feature-name]/prd.md",
+          "description": "Path where the prd.md document should be created (in feature-specific folder)"
         },
         "target_users": {
           "type": "array",
@@ -129,7 +129,7 @@
     },
     {
       "name": "transform_idea_to_prd",
-      "description": "Transform idea into PRD with user stories based on project context",
+      "description": "Transform idea into prd.md with user stories based on project context",
       "parameters": {
         "feature_name": {
           "type": "string",
@@ -205,7 +205,7 @@
     "input_format": "markdown",
     "input_file": "idea.md",
     "output_format": "markdown",
-    "output_file": "PRD.md",
+    "output_file": "prd.md",
     "quality_checks": [
       "All user stories have clear acceptance criteria focused on project workflows",
       "Functional requirements are specific and measurable for project technology",

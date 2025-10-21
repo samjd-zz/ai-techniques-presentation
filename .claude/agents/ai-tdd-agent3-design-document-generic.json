@@ -55,7 +55,7 @@
     {
       "step": 2,
       "action": "parse_prd_requirements",
-      "description": "Parse PRD.md for functional and non-functional requirements",
+      "description": "Parse prd.md for functional and non-functional requirements",
       "project_alignment": "Focus on requirements that align with project's technical capabilities and constraints"
     },
     {
@@ -96,8 +96,8 @@
         "prd_file": {
           "type": "string",
           "required": true,
-          "default": "./ai-tdd-docs/[feature-name]/PRD.md",
-          "description": "Path to the PRD.md file to transform (in feature-specific folder)"
+          "default": "./ai-tdd-docs/[feature-name]/prd.md",
+          "description": "Path to the prd.md file to transform (in feature-specific folder)"
         },
         "output_path": {
           "type": "string",
@@ -114,12 +114,12 @@
     },
     {
       "name": "generate_technical_design",
-      "description": "Generate technical design for PRD file using project analysis",
+      "description": "Generate technical design for prd.md file using project analysis",
       "parameters": {
         "prd_path": {
           "type": "string",
           "required": true,
-          "description": "Path to the PRD file to process"
+          "description": "Path to the prd.md file to process"
         },
         "architecture_style": {
           "type": "string",
