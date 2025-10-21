@@ -202,6 +202,47 @@ class LoadKNNNormalization:
         # Return the indices of rows that are outliers
         return np.where(outlier_mask)[0]
 
+    def remove_outliers(self, threshold=3, inplace=True):
+        """
+        Remove outliers from the dataset using the z-score method.
+        
+        Args:
+            threshold (float): Z-score threshold for outlier detection (default: 3)
+            inplace (bool): If True, modifies the internal dataset. If False, returns cleaned data (default: True)
+            
+        Returns:
+            tuple: (cleaned_data, removed_count) if inplace=False, otherwise (None, removed_count)
+                   cleaned_data: numpy array with outliers removed
+                   removed_count: number of outliers removed
+        """
+        # Find outlier indices
+        outlier_indices = self.find_outliers_zscore(threshold=threshold)
+        removed_count = len(outlier_indices)
+        
+        # Create a boolean mask for rows to keep (inverse of outliers)
+        keep_mask = np.ones(len(self.np_data), dtype=bool)
+        keep_mask[outlier_indices] = False
+        
+        if inplace:
+            # Update internal data structures
+            self.np_data = self.np_data[keep_mask]
+            self.pd_df = self.pd_df.iloc[keep_mask].reset_index(drop=True)
+            
+            # Update subject group data
+            subjects = self.pd_df['subject'].values
+            self.subject_data_5 = self.np_data[(subjects >= 1) & (subjects <= 5)]
+            self.subject_data_10 = self.np_data[(subjects >= 6) & (subjects <= 10)]
+            self.subject_data_15 = self.np_data[(subjects >= 11) & (subjects <= 15)]
+            self.subject_data_20 = self.np_data[(subjects >= 16) & (subjects <= 20)]
+            self.subject_data_25 = self.np_data[(subjects >= 21) & (subjects <= 25)]
+            self.subject_data_30 = self.np_data[(subjects >= 26) & (subjects <= 30)]
+            
+            return None, removed_count
+        else:
+            # Return cleaned data without modifying internal state
+            cleaned_data = self.np_data[keep_mask]
+            return cleaned_data, removed_count
+
     def compute_euclidean_distances(self, sample_idx):
         """
         Compute the Euclidean distance from a specific sample to all other samples.
@@ -561,18 +602,32 @@ if __name__ == "__main__":
     # Initialize dataset
     knn_loader = LoadKNNNormalization('data/human-smartphones.csv')
     
+    print("="*60)
+    print("INITIAL DATA ANALYSIS")
+    print("="*60)
+    print(f"Initial dataset shape: {knn_loader.np_data.shape}")
+    
     # Get statistics for walking activity
     walking_stats = knn_loader.compute_activity_statistics('WALKING')
-    print("Walking activity - Mean of first 5 features:")
+    print("\nWalking activity - Mean of first 5 features:")
     print(walking_stats['mean'][:5])
     
-    # Normalize all features
+    # Find and remove outliers
+    print("\n" + "="*60)
+    print("OUTLIER DETECTION AND REMOVAL")
+    print("="*60)
+    outlier_indices = knn_loader.find_outliers_zscore(threshold=3)
+    print(f"Number of outliers detected: {len(outlier_indices)}")
+    print(f"Percentage of outliers: {len(outlier_indices)/len(knn_loader.np_data)*100:.2f}%")
+    
+    # Remove outliers (inplace)
+    _, removed_count = knn_loader.remove_outliers(threshold=3, inplace=True)
+    print(f"\nOutliers removed: {removed_count}")
+    print(f"Cleaned dataset shape: {knn_loader.np_data.shape}")
+    
+    # Normalize all features (after outlier removal)
     normalized_data = knn_loader.normalize_features()
     print(f"\nNormalized data shape: {normalized_data.shape}")
-    
-    # Find outliers
-    outlier_indices = knn_loader.find_outliers_zscore(threshold=3)
-    print(f"\nNumber of outliers detected: {len(outlier_indices)}")
     
     # Get balanced sample
     balanced_sample = knn_loader.sample_balanced(n_per_activity=100)
@@ -582,7 +637,7 @@ if __name__ == "__main__":
     train, test = knn_loader.split_train_test(train_ratio=0.8)
     print(f"\nTrain shape: {train.shape}, Test shape: {test.shape}")
     
-    # Call KNN Modeling & Evaluation
+    # Call KNN Modeling & Evaluation (uses cleaned data)
     knn_loader.modeling_and_evaluation(random_seed=42)
     
     # Generate visualizations

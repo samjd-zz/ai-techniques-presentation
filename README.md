@@ -125,7 +125,7 @@ The data is split, then 12 different Decision Tree configurations are trained on
   - Activity statistics (mean, std, min, max)
   - Subject statistics
   - Correlation matrices
-- Outlier detection using z-score method
+- **Outlier detection and removal** using z-score method
 - Euclidean distance computation (for KNN)
 - Balanced sampling (equal samples per activity class)
 - Train/test splitting with stratification
@@ -458,13 +458,16 @@ knn_loader = LoadKNNNormalization('data/human-smartphones.csv')
 walking_stats = knn_loader.compute_activity_statistics('WALKING')
 print("Walking - Mean of first 5 features:", walking_stats['mean'][:5])
 
-# Normalize features (z-score standardization)
-normalized = knn_loader.normalize_features()
-print(f"Normalized shape: {normalized.shape}")
-
-# Detect outliers
+# Detect and remove outliers BEFORE normalization
 outliers = knn_loader.find_outliers_zscore(threshold=3)
 print(f"Outliers detected: {len(outliers)}")
+
+_, removed_count = knn_loader.remove_outliers(threshold=3, inplace=True)
+print(f"Outliers removed: {removed_count}")
+
+# Normalize features AFTER outlier removal (z-score standardization)
+normalized = knn_loader.normalize_features()
+print(f"Normalized shape: {normalized.shape}")
 
 # Create balanced dataset
 balanced = knn_loader.sample_balanced(n_per_activity=100, random_seed=42)
@@ -589,6 +592,10 @@ normalized = knn_loader.normalize_features()
 
 # Find outliers (z-score > threshold)
 outlier_indices = knn_loader.find_outliers_zscore(threshold=3)
+
+# Remove outliers from the dataset
+_, removed_count = knn_loader.remove_outliers(threshold=3, inplace=True)
+print(f"Removed {removed_count} outliers")
 
 # Filter by threshold
 filtered = knn_loader.filter_by_threshold(
@@ -735,7 +742,7 @@ Where:
 ### For KNN Normalization
 
 1. **Always normalize**: KNN is distance-based, normalization is crucial
-2. **Remove outliers**: Use `find_outliers_zscore()` before training
+2. **Remove outliers**: Use `remove_outliers()` to clean data before training
 3. **Balance classes**: Use `sample_balanced()` for imbalanced data
 4. **Set random seed**: Ensure reproducibility in splits and sampling
 
