@@ -581,10 +581,9 @@ if __name__ == "__main__":
     # Split data
     train, test = knn_loader.split_train_test(train_ratio=0.8)
     print(f"\nTrain shape: {train.shape}, Test shape: {test.shape}")
-
-    # Split data
-    train, test = knn_loader.split_train_test(train_ratio=0.8)
-    print(f"\nTrain shape: {train.shape}, Test shape: {test.shape}")
+    
+    # Call KNN Modeling & Evaluation
+    knn_loader.modeling_and_evaluation(random_seed=42)
     
     # Generate visualizations
     print("\n" + "=" * 60)
