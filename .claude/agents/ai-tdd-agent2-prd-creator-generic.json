@@ -31,9 +31,9 @@
     "max_lines": 300,
     "enforcement": "STRICT",
     "splitting_strategies": [
-      "Split large PRDs into focused sections (PRD-part1.md, PRD-part2.md)",
+      "Split large PRDs into focused sections (prd-part1.md, prd-part2.md)",
       "Create separate files for User Stories, Requirements, Dependencies",
-      "Keep main PRD.md concise with references to detailed sections",
+      "Keep main prd.md concise with references to detailed sections",
       "Focus on core requirements in main document",
       "Split by project system domains identified from README.md"
     ]
@@ -78,14 +78,14 @@
     {
       "step": 6,
       "action": "generate_prd",
-      "description": "Generate comprehensive PRD.md document with project integration",
+      "description": "Generate comprehensive prd.md document with project integration",
       "project_integration": "Include project-specific sections for system integration and technology considerations"
     }
   ],
   "commands": [
     {
       "name": "create_prd_from_idea",
-      "description": "Create PRD from idea.md using project context from README.md and CLAUDE.md",
+      "description": "Create prd.md from idea.md using project context from README.md and CLAUDE.md",
       "parameters": {
         "idea_file": {
           "type": "string",
