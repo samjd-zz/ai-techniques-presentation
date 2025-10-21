@@ -21,6 +21,10 @@ plt.style.use('seaborn-v0_8-whitegrid')
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
 
 class LoadKNNNormalization:
     """
@@ -316,6 +320,181 @@ class LoadKNNNormalization:
         test_indices = indices[split_idx:]
         
         return self.np_data[train_indices], self.np_data[test_indices]
+
+    def modeling_and_evaluation(self, random_seed=42):
+        """
+        Test multiple KNN configurations and find the best model.
+        
+        This method performs comprehensive evaluation by:
+        1. Preparing and normalizing the data
+        2. Testing multiple k values and distance metrics
+        3. Training each KNN model on the training set
+        4. Evaluating each model on the test set
+        5. Identifying and analyzing the best performing model
+        
+        Args:
+            random_seed (int): Random seed for reproducibility (default: 42)
+        """
+        print(f"\n" + "="*60)
+        print("KNN MODELING & EVALUATION")
+        print("="*60)
+        
+        # ============================================================
+        # STEP 1: Prepare and normalize data
+        # ============================================================
+        # Get normalized features
+        normalized_features = self.normalize_features()
+        
+        # Get activity labels (target variable)
+        activities = self.pd_df['Activity'].values
+        
+        # Encode activity labels to numeric values
+        self.activity_encoder = LabelEncoder()
+        y_encoded = self.activity_encoder.fit_transform(activities)
+        
+        # Display target classes
+        print(f"\nTarget Activities: {list(self.activity_encoder.classes_)}")
+        
+        # ============================================================
+        # STEP 2: Train-Test Split
+        # ============================================================
+        X_train, X_test, y_train, y_test = train_test_split(
+            normalized_features, y_encoded, test_size=0.3, 
+            random_state=random_seed, stratify=y_encoded
+        )
+        
+        print(f"\nTraining set size: {len(X_train)}")
+        print(f"Testing set size: {len(X_test)}")
+        
+        # Display class distribution in training set
+        print(f"\nClass distribution in training set:")
+        unique, counts = np.unique(y_train, return_counts=True)
+        for cls, count in zip(unique, counts):
+            class_name = self.activity_encoder.inverse_transform([cls])[0]
+            print(f"  {class_name}: {count} ({count/len(y_train):.1%})")
+        
+        # ============================================================
+        # STEP 3: Define KNN parameter combinations
+        # ============================================================
+        # Test various k values and distance metrics
+        param_combinations = [
+            {'n_neighbors': 3, 'metric': 'euclidean', 'weights': 'uniform'},
+            {'n_neighbors': 5, 'metric': 'euclidean', 'weights': 'uniform'},
+            {'n_neighbors': 5, 'metric': 'euclidean', 'weights': 'distance'},
+            {'n_neighbors': 7, 'metric': 'euclidean', 'weights': 'uniform'},
+            {'n_neighbors': 7, 'metric': 'euclidean', 'weights': 'distance'},
+            {'n_neighbors': 3, 'metric': 'manhattan', 'weights': 'uniform'},
+            {'n_neighbors': 5, 'metric': 'manhattan', 'weights': 'uniform'},
+            {'n_neighbors': 7, 'metric': 'manhattan', 'weights': 'distance'},
+            {'n_neighbors': 9, 'metric': 'euclidean', 'weights': 'uniform'},
+            {'n_neighbors': 11, 'metric': 'euclidean', 'weights': 'uniform'},
+            {'n_neighbors': 15, 'metric': 'euclidean', 'weights': 'uniform'},
+            {'n_neighbors': 20, 'metric': 'euclidean', 'weights': 'uniform'}
+        ]
+        
+        # ============================================================
+        # STEP 4: Train and Evaluate Each Configuration
+        # ============================================================
+        print("\nTesting different KNN configurations...")
+        print(f"{'#':<3} {'k':<4} {'Metric':<12} {'Weights':<10} {'Accuracy':<10}")
+        print("-" * 45)
+        
+        results = []
+        best_accuracy = 0.0
+        best_model = None
+        
+        for i, params in enumerate(param_combinations, 1):
+            # Create KNN model with current parameters
+            model = KNeighborsClassifier(
+                n_neighbors=params['n_neighbors'],
+                metric=params['metric'],
+                weights=params['weights']
+            )
+            
+            # Train the model
+            model.fit(X_train, y_train)
+            
+            # Make predictions on test set
+            y_pred = model.predict(X_test)
+            
+            # Calculate accuracy
+            accuracy = accuracy_score(y_test, y_pred)
+            
+            # Store results
+            result = params.copy()
+            result['accuracy'] = accuracy
+            result['model'] = model
+            results.append(result)
+            
+            # Track best model
+            if accuracy > best_accuracy:
+                best_accuracy = accuracy
+                best_model = model
+                self.best_accuracy = best_accuracy
+                self.best_model = best_model
+                self.X_train = X_train
+                self.X_test = X_test
+                self.y_train = y_train
+                self.y_test = y_test
+            
+            # Print results
+            print(f"{i:<3} {params['n_neighbors']:<4} {params['metric']:<12} "
+                  f"{params['weights']:<10} {accuracy:<10.3f}")
+        
+        # ============================================================
+        # STEP 5: Store and Display Results
+        # ============================================================
+        self.results_df = pd.DataFrame(results)
+        
+        # Display best model
+        print(f"\nBest Model Performance:")
+        best_result = self.results_df.loc[self.results_df['accuracy'].idxmax()]
+        print(f"Accuracy: {best_accuracy:.3f}")
+        print(f"Parameters:")
+        print(f"  k (n_neighbors): {int(best_result['n_neighbors'])}")
+        print(f"  Distance Metric: {best_result['metric']}")
+        print(f"  Weights: {best_result['weights']}")
+        
+        # ============================================================
+        # STEP 6: Detailed Evaluation of Best Model
+        # ============================================================
+        print(f"\n" + "="*60)
+        print("BEST MODEL DETAILED EVALUATION")
+        print("="*60)
+        
+        # Get predictions from best model
+        best_predictions = self.best_model.predict(self.X_test)
+        
+        # Get activity names for readability
+        activity_names = list(self.activity_encoder.classes_)
+        
+        # ============================================================
+        # STEP 6A: Confusion Matrix
+        # ============================================================
+        cm = confusion_matrix(self.y_test, best_predictions)
+        print(f"\nConfusion Matrix:")
+        
+        n_classes = len(activity_names)
+        if n_classes <= 10:
+            # Format as table for reasonable number of classes
+            header = f"{'Actual':<15} | " + " | ".join([f"{name[:8]:^8}" for name in activity_names])
+            print(header)
+            print("-" * len(header))
+            
+            for i, actual_class in enumerate(activity_names):
+                row = f"{actual_class[:13]:<15} | "
+                row += " | ".join([f"{cm[i,j]:^8}" for j in range(n_classes)])
+                print(row)
+        else:
+            # Show raw matrix for many classes
+            print(cm)
+        
+        # ============================================================
+        # STEP 6B: Classification Report
+        # ============================================================
+        print(f"\nClassification Report:")
+        print(classification_report(self.y_test, best_predictions, 
+                                   target_names=activity_names, zero_division=0))
 
     def plotActivity(self):
         """
