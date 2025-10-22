@@ -155,7 +155,7 @@ class OllamaFeatureEngineer:
         # repeat_penalty: 1.1 = slight penalty to avoid repetition
         self.ollama_options = {
             'temperature': temperature,
-            'num_predict': 8000,  # Increased for complete JSON responses
+            'num_predict': -1,  # Increased for complete JSON responses
             'top_p': 0.9,
             'repeat_penalty': 1.1
         }
@@ -389,7 +389,8 @@ Please fix this JSON and return ONLY the corrected JSON array with no other text
             response = ollama.chat(
                 model=self.model,
                 messages=[{'role': 'user', 'content': repair_prompt}],
-                options=self.ollama_options
+                options=self.ollama_options,
+                format='json'
             )
             return response['message']['content']
         except Exception as e:
@@ -522,7 +523,8 @@ IMPORTANT:
                 response = ollama.chat(
                     model=self.model,
                     messages=[{'role': 'user', 'content': prompt}],
-                    options=self.ollama_options
+                    options=self.ollama_options,
+                    format='json'
                 )
                 
                 # Record timing
