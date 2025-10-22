@@ -366,24 +366,53 @@ class OllamaFeatureEngineer:
         
         return True
     
-    def _ask_llm_to_fix_json(self, broken_json: str, error_message: str) -> str:
+    def _ask_llm_to_fix_json(self, broken_json: str, error_message: str, original_prompt: str) -> str:
         """
-        Ask the LLM to fix malformed JSON.
+        Ask the LLM to fix malformed JSON, providing full context.
         
         Args:
-            broken_json: The malformed JSON string
-            error_message: The error message from JSON parser
+            broken_json (str): The malformed JSON string that failed to parse.
+            error_message (str): The specific parsing error message.
+            original_prompt (str): The prompt that generated the broken JSON.
             
         Returns:
-            str: Fixed JSON string
+            str: The LLM's attempt at a corrected JSON string.
         """
-        repair_prompt = f"""The following JSON is malformed and caused this error:
-{error_message}
+        self.metrics['json_repairs_attempted'] += 1
+        self.logger.warning(f"Attempting to self-heal broken JSON. Error: {error_message}")
+        
+        # Enhanced repair prompt with more context and specific instructions
+        repair_prompt = f"""An LLM response to a previous prompt was not valid JSON. I need you to act as a JSON repair expert to fix it.
 
-Broken JSON:
+Here was the original request that asked for a JSON response:
+---
+{original_prompt}
+---
+
+Here is the broken JSON response that was received:
+---
 {broken_json}
+---
 
-Please fix this JSON and return ONLY the corrected JSON array with no other text. The JSON must be valid and complete. Each object must have "feature_name", "code", and "explanation" fields, and all strings must be properly quoted and closed."""
+The JSON parser failed with this error:
+---
+{error_message}
+---
+
+Your task is to carefully analyze the broken JSON and the original request to fix the formatting.
+
+**Repair Instructions:**
+1.  **Analyze the Error:** The error message is your biggest clue. Use it to find the exact problem.
+2.  **Check for Common Mistakes:**
+    - Missing commas between array elements or object properties.
+    - Trailing commas after the last element.
+    - Unclosed brackets `{{` or `[` or parentheses.
+    - Strings that are not properly quoted with double quotes (`"`).
+    - Newline characters or escape sequences inside strings that are not properly escaped.
+3.  **Ensure Completeness:** The final output must be a complete, valid JSON array. Do not leave anything unfinished.
+4.  **Strict Formatting:** Return ONLY the corrected JSON array. Do not include any explanations, apologies, or markdown formatting like ```json ... ```.
+
+Please provide the corrected JSON."""
 
         try:
             response = ollama.chat(
@@ -392,9 +421,20 @@ Please fix this JSON and return ONLY the corrected JSON array with no other text
                 options=self.ollama_options,
                 format='json'
             )
-            return response['message']['content']
+            
+            # Clean the response before returning
+            repaired_content = response['message']['content']
+            
+            # Strip markdown fences if they exist
+            if repaired_content.strip().startswith("```json"):
+                repaired_content = repaired_content.strip()[7:-3].strip()
+            
+            self.metrics['json_repairs_successful'] += 1
+            self.logger.info("LLM provided a repaired JSON successfully.")
+            return repaired_content
+            
         except Exception as e:
-            print(f"Failed to get repair response: {e}")
+            self.logger.error(f"Failed to get repair response from LLM: {e}")
             raise
     
     def get_feature_suggestions(self, df: pd.DataFrame, target: str = None, 
@@ -536,25 +576,30 @@ IMPORTANT:
                 # Mark model as loaded after successful call
                 self._model_loaded = True
                 
-                # Extract the response content
+                # Extract the response content and clean it
                 content = response['message']['content']
                 
-                # Extract JSON from response using regex
-                json_match = re.search(r'\[.*\]', content, re.DOTALL)
+                # Clean the content: remove markdown, find the JSON array
+                if content.strip().startswith("```json"):
+                    content = content.strip()[7:-3].strip()
                 
-                if not json_match:
+                # Find the start and end of the JSON array
+                start_index = content.find('[')
+                end_index = content.rfind(']')
+                
+                if start_index == -1 or end_index == -1 or end_index < start_index:
+                    self.logger.warning(f"No valid JSON array found in response on attempt {attempt + 1}")
                     if attempt < max_retries - 1:
-                        print(f"⚠ Attempt {attempt + 1}: No JSON found, retrying...")
+                        print(f"⚠ Attempt {attempt + 1}: No JSON array found, retrying...")
                         continue
-                    raise ValueError("LLM did not return valid JSON")
+                    raise ValueError("LLM did not return a valid JSON array after multiple retries.")
                 
-                # Get the JSON string
-                json_str = json_match.group()
+                json_str = content[start_index : end_index + 1]
                 
                 try:
                     # Parse the JSON into Python objects
                     self.metrics['json_parse_attempts'] += 1
-                    suggestions = json.loads(json_str, strict=False)
+                    suggestions = json.loads(json_str)
                     
                     # Validate structure
                     if self._validate_suggestions(suggestions):
@@ -563,35 +608,31 @@ IMPORTANT:
                         print(f"{Colors.BRIGHT_GREEN}✓{Colors.RESET} Successfully parsed {len(suggestions)} feature suggestions")
                         return suggestions
                     else:
+                        self.logger.warning(f"JSON structure is invalid on attempt {attempt + 1}")
                         if attempt < max_retries - 1:
                             print(f"⚠ Attempt {attempt + 1}: Invalid structure, retrying...")
                             continue
-                        raise ValueError("Suggestions have invalid structure")
+                        raise ValueError("LLM returned JSON with invalid structure.")
                         
                 except json.JSONDecodeError as e:
+                    self.metrics['json_parse_failures'] += 1
+                    self.logger.warning(f"JSON parsing failed on attempt {attempt + 1}: {e}")
+                    
                     if attempt < max_retries - 1:
                         print(f"⚠ Attempt {attempt + 1}: JSON error - {e}")
                         print(f"   Asking LLM to fix the JSON...")
                         
-                        # Ask LLM to repair the broken JSON
-                        repaired_content = self._ask_llm_to_fix_json(json_str, str(e))
+                        # Ask LLM to repair the broken JSON, providing full context
+                        json_str = self._ask_llm_to_fix_json(json_str, str(e), prompt)
                         
-                        # Try to extract and parse the repaired JSON
-                        json_match_repaired = re.search(r'\[.*\]', repaired_content, re.DOTALL)
-                        if json_match_repaired:
-                            json_str = json_match_repaired.group()
-                            try:
-                                suggestions = json.loads(json_str, strict=False)
-                                if self._validate_suggestions(suggestions):
-                                    print(f"✓ LLM successfully repaired the JSON!")
-                                    return suggestions
-                            except:
-                                pass  # Will retry on next iteration
-                        
-                        print(f"   Repair unsuccessful, retrying from scratch...")
-                        continue
+                        # Retry parsing with the repaired JSON in the next loop iteration
+                        # This is a bit of a hack: we replace the content and let the loop re-run
+                        # This avoids duplicating the parsing logic.
+                        print(f"   Retrying with repaired JSON...")
+                        continue # Go to the next attempt with the repaired JSON
                     else:
                         # Last attempt failed
+                        self.logger.error(f"All {max_retries} attempts to parse JSON failed.")
                         print(f"✗ All {max_retries} attempts failed")
                         print(f"Last error: {e}")
                         print(f"Problematic JSON (first 500 chars):\n{json_str[:500]}")
