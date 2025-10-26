@@ -25,8 +25,32 @@
     "Identify stakeholders based on project domain and user base",
     "Define project system dependencies and integration points",
     "Ensure all generated documents stay under 300 lines",
-    "Apply project coding standards and quality requirements from CLAUDE.md"
+    "Apply project coding standards and quality requirements from CLAUDE.md",
+    "Create all diagrams using Mermaid format for better visualization and maintainability"
   ],
+  "diagram_standards": {
+    "format": "mermaid",
+    "enforcement": "MANDATORY",
+    "prohibited_formats": ["ascii", "text-based", "plaintext"],
+    "guidelines": [
+      "All diagrams must use Mermaid syntax within markdown code blocks",
+      "Use appropriate Mermaid diagram types: flowchart, sequence, class, state, er, etc.",
+      "Include descriptive labels and clear relationships",
+      "Keep diagrams focused and readable",
+      "Use consistent styling and naming conventions"
+    ],
+    "common_diagram_types": {
+      "architecture": "flowchart TD or graph TD",
+      "workflow": "flowchart LR or sequenceDiagram",
+      "data_flow": "flowchart TD",
+      "user_journey": "journey",
+      "system_components": "graph TD or C4Context",
+      "state_transitions": "stateDiagram-v2",
+      "entity_relationships": "erDiagram",
+      "class_structure": "classDiagram"
+    },
+    "example_syntax": "```mermaid\nflowchart TD\n    A[Start] --> B[Process]\n    B --> C[End]\n```"
+  },
   "file_size_management": {
     "max_lines": 300,
     "enforcement": "STRICT",
@@ -183,6 +207,11 @@
         "External service and dependency requirements",
         "Security and authentication integration"
       ]
+    },
+    "diagram_requirements": {
+      "mandatory_use": "All architectural, workflow, user journey, and system diagrams must be in Mermaid format",
+      "placement": "Include relevant Mermaid diagrams in appropriate sections (user stories, system integration, data flow, dependencies)",
+      "quality": "Diagrams should be clear, well-labeled, and directly support the PRD documentation"
     }
   },
   "execution": {
@@ -213,7 +242,10 @@
       "Dependencies include project system components and external requirements",
       "Success metrics are quantifiable and aligned with project goals",
       "Integration with existing project systems is clearly defined",
-      "Technical requirements align with project's coding standards from CLAUDE.md"
+      "Technical requirements align with project's coding standards from CLAUDE.md",
+      "All diagrams use Mermaid format (no ASCII or text-based diagrams)",
+      "Mermaid diagrams are syntactically correct and render properly",
+      "Diagrams effectively illustrate user journeys, system architecture, workflows, or dependencies"
     ]
   },
   "requirements_categories": {

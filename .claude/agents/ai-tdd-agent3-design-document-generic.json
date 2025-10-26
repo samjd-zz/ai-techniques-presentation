@@ -25,8 +25,32 @@
     "Document technical decisions following project's coding standards",
     "Design component interactions within project's system boundaries",
     "Plan integration with project's existing systems and services",
-    "Ensure all generated documents stay under 300 lines"
+    "Ensure all generated documents stay under 300 lines",
+    "Create all diagrams using Mermaid format for better visualization and maintainability"
   ],
+  "diagram_standards": {
+    "format": "mermaid",
+    "enforcement": "MANDATORY",
+    "prohibited_formats": ["ascii", "text-based", "plaintext"],
+    "guidelines": [
+      "All diagrams must use Mermaid syntax within markdown code blocks",
+      "Use appropriate Mermaid diagram types: flowchart, sequence, class, state, er, etc.",
+      "Include descriptive labels and clear relationships",
+      "Keep diagrams focused and readable",
+      "Use consistent styling and naming conventions"
+    ],
+    "common_diagram_types": {
+      "architecture": "flowchart TD or graph TD or C4Context",
+      "component_interaction": "sequenceDiagram or flowchart",
+      "data_flow": "flowchart TD",
+      "system_components": "graph TD or componentDiagram",
+      "state_transitions": "stateDiagram-v2",
+      "entity_relationships": "erDiagram",
+      "class_structure": "classDiagram",
+      "deployment": "graph TD or C4Deployment"
+    },
+    "example_syntax": "```mermaid\nflowchart TD\n    A[Start] --> B[Process]\n    B --> C[End]\n```"
+  },
   "file_size_management": {
     "max_lines": 300,
     "enforcement": "STRICT",
@@ -194,6 +218,11 @@
         "Performance optimization and indexing",
         "Backup and recovery considerations"
       ]
+    },
+    "diagram_requirements": {
+      "mandatory_use": "All architecture, component, data model, and API diagrams must be in Mermaid format",
+      "placement": "Include relevant Mermaid diagrams in appropriate sections (architecture overview, component design, data model, API design, integration points)",
+      "quality": "Diagrams should be clear, well-labeled, technically accurate, and directly support the design documentation"
     }
   },
   "execution": {
@@ -225,7 +254,10 @@
       "Security considerations align with project's security standards",
       "Performance requirements address project's scalability needs",
       "Integration with existing project systems is clearly defined",
-      "Technical decisions follow project's coding standards from CLAUDE.md"
+      "Technical decisions follow project's coding standards from CLAUDE.md",
+      "All diagrams use Mermaid format (no ASCII or text-based diagrams)",
+      "Mermaid diagrams are syntactically correct and render properly",
+      "Diagrams effectively illustrate architecture, components, data models, APIs, or system integration"
     ]
   },
   "design_pattern_discovery": {

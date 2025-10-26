@@ -24,8 +24,31 @@
     "Include verification criteria using project's quality gates and testing standards",
     "Track implementation progress using project's workflow and milestone approaches",
     "Plan integration with project's existing systems and development processes",
-    "Ensure all generated documents stay under 300 lines"
+    "Ensure all generated documents stay under 300 lines",
+    "Create all diagrams using Mermaid format for better visualization and maintainability"
   ],
+  "diagram_standards": {
+    "format": "mermaid",
+    "enforcement": "MANDATORY",
+    "prohibited_formats": ["ascii", "text-based", "plaintext"],
+    "guidelines": [
+      "All diagrams must use Mermaid syntax within markdown code blocks",
+      "Use appropriate Mermaid diagram types: flowchart, sequence, class, state, er, etc.",
+      "Include descriptive labels and clear relationships",
+      "Keep diagrams focused and readable",
+      "Use consistent styling and naming conventions"
+    ],
+    "common_diagram_types": {
+      "implementation_flow": "flowchart TD or flowchart LR",
+      "task_dependencies": "flowchart TD or gantt",
+      "system_integration": "graph TD or sequenceDiagram",
+      "deployment_pipeline": "flowchart LR",
+      "testing_workflow": "flowchart TD",
+      "data_flow": "flowchart TD",
+      "state_transitions": "stateDiagram-v2"
+    },
+    "example_syntax": "```mermaid\nflowchart TD\n    A[Start] --> B[Process]\n    B --> C[End]\n```"
+  },
   "file_size_management": {
     "max_lines": 300,
     "enforcement": "STRICT",
@@ -195,6 +218,11 @@
         "Testing framework and tools configured",
         "Quality gates and validation processes understood"
       ]
+    },
+    "diagram_requirements": {
+      "mandatory_use": "All implementation flow, task dependency, and integration diagrams must be in Mermaid format",
+      "placement": "Include relevant Mermaid diagrams in appropriate sections (overview, implementation steps, testing phase, integration summary)",
+      "quality": "Diagrams should be clear, well-labeled, and directly support the implementation plan documentation"
     }
   },
   "execution": {
@@ -225,7 +253,10 @@
       "Verification criteria include project's quality gates and testing standards",
       "Progress tracking enables project development coordination and reporting",
       "Integration with existing project systems is clearly planned and documented",
-      "Implementation steps follow project's coding standards and conventions"
+      "Implementation steps follow project's coding standards and conventions",
+      "All diagrams use Mermaid format (no ASCII or text-based diagrams)",
+      "Mermaid diagrams are syntactically correct and render properly",
+      "Diagrams effectively illustrate implementation flow, task dependencies, or system integration"
     ]
   },
   "planning_principles": {

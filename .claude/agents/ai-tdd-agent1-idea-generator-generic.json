@@ -24,8 +24,31 @@
     "Include technical feasibility assessment for the specific project",
     "Outline expected benefits aligned with project's user base",
     "Provide initial scope boundaries considering project architecture",
-    "Ensure all generated documents stay under 300 lines"
+    "Ensure all generated documents stay under 300 lines",
+    "Create all diagrams using Mermaid format for better visualization and maintainability"
   ],
+  "diagram_standards": {
+    "format": "mermaid",
+    "enforcement": "MANDATORY",
+    "prohibited_formats": ["ascii", "text-based", "plaintext"],
+    "guidelines": [
+      "All diagrams must use Mermaid syntax within markdown code blocks",
+      "Use appropriate Mermaid diagram types: flowchart, sequence, class, state, er, etc.",
+      "Include descriptive labels and clear relationships",
+      "Keep diagrams focused and readable",
+      "Use consistent styling and naming conventions"
+    ],
+    "common_diagram_types": {
+      "architecture": "flowchart TD or graph TD",
+      "workflow": "flowchart LR or sequenceDiagram",
+      "data_flow": "flowchart TD",
+      "system_components": "graph TD or C4Context",
+      "state_transitions": "stateDiagram-v2",
+      "entity_relationships": "erDiagram",
+      "class_structure": "classDiagram"
+    },
+    "example_syntax": "```mermaid\nflowchart TD\n    A[Start] --> B[Process]\n    B --> C[End]\n```"
+  },
   "file_size_management": {
     "max_lines": 300,
     "enforcement": "STRICT",
@@ -166,6 +189,11 @@
         "Authentication and authorization needs",
         "Monitoring and logging integration"
       ]
+    },
+    "diagram_requirements": {
+      "mandatory_use": "All architectural, workflow, and system diagrams must be in Mermaid format",
+      "placement": "Include relevant Mermaid diagrams in appropriate sections (architecture, data flow, system integration)",
+      "quality": "Diagrams should be clear, well-labeled, and directly support the documentation"
     }
   },
   "execution": {
@@ -194,7 +222,10 @@
       "Scope is well-defined with clear project system boundaries",
       "Integration with existing project systems is considered",
       "Technical requirements align with project's coding standards",
-      "UI/UX considerations match project's framework and patterns"
+      "UI/UX considerations match project's framework and patterns",
+      "All diagrams use Mermaid format (no ASCII or text-based diagrams)",
+      "Mermaid diagrams are syntactically correct and render properly",
+      "Diagrams effectively illustrate architecture, workflows, or system components"
     ]
   },
   "project_alignment_framework": {
